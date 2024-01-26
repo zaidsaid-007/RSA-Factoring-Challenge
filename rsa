@@ -1,27 +1,44 @@
-#!/usr/bin/python3
 import sys
 from math import isqrt
 
-def is_prime(num):
+def is_prime(num: int) -> bool:
+    """Determines if a number is prime using trial division."""
     if num < 2:
         return False
-    for i in range(2, isqrt(num) + 1):
-        if num % i == 0:
+    for divisor in range(2, isqrt(num) + 1):
+        if num % divisor == 0:
             return False
     return True
 
-def factorize_rsa(n):
-    for i in range(2, isqrt(n) + 1):
-        if n % i == 0 and is_prime(i) and is_prime(n // i):
-            return i, n // i
-    return n, 1
+def factorize_rsa_using_trial_division(n: int) -> tuple[int, int]:
+    """Factorizes an RSA number using trial division."""
+    for divisor in range(2, isqrt(n) + 1):
+        if n % divisor == 0:
+            factor1 = divisor
+            factor2 = n // divisor
+            if is_prime(factor1) and is_prime(factor2):
+                return factor1, factor2
+            # Early exit if both factors found (even if not prime)
+            break
+    # Handle composite numbers and potential non-prime factors
+    if n > 1:
+        return n, 1
+    return None, None  # Indicate factorization failure
 
 def main(filename):
-    with open(filename, 'r') as file:
-        for line in file:
-            num = int(line)
-            factor1, factor2 = factorize_rsa(num)
-            print(f"{num}={factor1}*{factor2}")
+    try:
+        with open(filename, 'r') as file:
+            for line in file:
+                num = int(line)  # Convert line to integer
+                factor1, factor2 = factorize_rsa_using_trial_division(num)
+                if factor1 is not None and factor2 is not None:
+                    print(f"{num}={factor1}*{factor2}")
+                else:
+                    print(f"{num} cannot be factored using trial division")
+    except FileNotFoundError:
+        print(f"Error: File '{filename}' not found")
+    except ValueError:
+        print(f"Error: Invalid input in file '{filename}'")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -30,3 +47,5 @@ if __name__ == "__main__":
 
     filename = sys.argv[1]
     main(filename)
+
+
